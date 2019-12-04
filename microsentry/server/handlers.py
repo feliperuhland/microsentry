@@ -8,6 +8,7 @@ from microsentry import models
 
 class BaseHandler(tornado.web.RequestHandler):
     async def prepare(self):
+        self.event_service = self.application.event_service
         self.set_header("Content-Type", "application/json")
 
 
@@ -18,48 +19,6 @@ class StoreHandler(BaseHandler):
         if encode == "gzip":
             body = tornado.escape.json_decode(gzip.decompress(body))
 
-        context_obj = body.pop("contexts", {})
-        context = models.Context(**context_obj.get("runtime", {}))
-        print(context)
-        exception_list = []
-        for exception_obj in body.pop("exception", {}).get("values", []):
-            frame_list = []
-            for frame_obj in exception_obj.get("stacktrace", {}).get(
-                "frames", []
-            ):
-                frame_obj.pop("in_app")
-                variable_map = frame_obj.pop("vars")
-                frame = models.Frame(
-                    **{"variable_map": variable_map, **frame_obj}
-                )
-                print(frame)
-                frame_list.append(frame)
-
-            exception = models.SentryException(
-                frame_list=frame_list,
-                handled=exception_obj.get("mechanism", {}).get("handled"),
-                module=exception_obj.get("module"),
-                type=exception_obj.get("type"),
-                value=exception_obj.get("value"),
-            )
-            print(exception)
-            exception_list.append(exception)
-
-        event_id = body.pop("event_id")
-        body.pop("breadcrumbs")
-        body.pop("extra")
-        body.pop("sdk")
-        body.pop("platform")
-        body.pop("_meta")
-        event = models.Event(
-            **{
-                "context": context,
-                "exception_list": exception_list,
-                "project_id": project_id,
-                "id": event_id,
-                **body,
-            }
-        )
-        print(event)
+        event = self.event_service.event_from_json(body, project_id)
         response = {"id": event.id}
         self.write(tornado.escape.json_encode(response))
