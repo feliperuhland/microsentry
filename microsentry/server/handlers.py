@@ -3,8 +3,6 @@ import gzip
 import tornado.escape
 import tornado.web
 
-from microsentry import models
-
 
 class BaseHandler(tornado.web.RequestHandler):
     async def prepare(self):
