@@ -11,5 +11,5 @@ class MicroSentryApplication(tornado.web.Application):
         handler_list = [
             (r"/api/(\d+)/store/?", handlers.StoreHandler),
         ]
-        settings = dict(debug=options.debug, autoreload=options.debug,)
+        settings = dict(debug=options.debug, autoreload=options.debug)
         super().__init__(handler_list, **settings)
