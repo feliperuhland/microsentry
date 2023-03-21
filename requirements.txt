@@ -1,2 +1,2 @@
-sentry-sdk==0.13.4
+sentry-sdk==1.14.0
 tornado==6.0.3
