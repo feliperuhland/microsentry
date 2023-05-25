@@ -1,2 +1,2 @@
 sentry-sdk==0.13.4
-tornado==6.0.3
+tornado==6.3.2
